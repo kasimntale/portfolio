@@ -4,7 +4,7 @@ An original editorial portfolio built with Next.js App Router, TypeScript, Tailw
 
 ## Run locally
 
-Use Node.js 24 LTS (see `.nvmrc`) and npm. No API keys, database, paid services, or external font requests are required.
+Use Node.js 22.x (22.12.0 or later; see `.nvmrc`) and npm. No API keys, database, paid services, or external font requests are required.
 
 ```sh
 npm ci
@@ -94,7 +94,7 @@ The previous HTML, stylesheet, and all five outdated images have been removed. G
 
 ## Validation record
 
-Validated in the cloud workspace using Node 24, Next.js production mode, and system Chromium:
+Validated in the cloud workspace using Node 22, Next.js production mode, and system Chromium:
 
 - `npm run typecheck`: passed.
 - `npm run build`: passed; home, four project pages, 404, robots, sitemap, and Open Graph image generated.
@@ -102,3 +102,16 @@ Validated in the cloud workspace using Node 24, Next.js production mode, and sys
 - WCAG 2 A/AA and WCAG 2.1 AA axe scans: no violations on the home and MirrorLoad detail pages in desktop/mobile reduced-motion mode. Automated scanning does not replace a full manual accessibility audit.
 - `npm audit --omit=dev --audit-level=high`: zero known vulnerabilities at validation time.
 - Desktop and mobile screenshots inspected. No Lighthouse benchmark, physical Intel GPU, Windows, Firefox, or Safari result is claimed; the mobile tests use Chromium device emulation.
+
+## Vercel runtime and npm cache configuration
+
+`package.json` pins the runtime to `22.x`, `.nvmrc` selects Node 22, and GitHub Actions reads `.nvmrc`. Use the latest Node 22 patch: the locked accessibility testing dependency requires at least 22.12.0; Next.js requires at least 20.9.0. Dependencies have not been upgraded for this runtime change. In Vercel Project Settings, change Node.js Version from `20.x` to `22.x` to match the package engine and remove the settings-override warning. Use the Next.js framework preset, install with `npm ci`, and build with `npm run build`; no `vercel.json` runtime override is needed.
+
+There is no repository `.npmrc` or `cache-dir` configuration. If Vercel reports `Unknown env config "cache-dir"` or `Unknown user config "cache-dir"`, inspect the project's Vercel environment variables and custom install command:
+
+- Rename `NPM_CONFIG_CACHE_DIR` / `npm_config_cache_dir` to the supported `NPM_CONFIG_CACHE` / `npm_config_cache`, preserving the existing cache directory value.
+- Replace a custom `--cache-dir <path>` argument with `--cache <path>`.
+- If a generated or user-level `.npmrc` contains `cache-dir=<path>`, use `cache=<path>` instead.
+- If no custom cache location is needed, remove the invalid override and retain npm's default cache. Keep GitHub Actions `cache: npm` and Vercel's normal dependency/build caching enabled. Do not clear caches to silence a configuration warning.
+
+Check `npm config get cache` in the build environment to verify the effective cache path. If the invalid environment variable is absent from project/team settings, it may be injected by the Vercel build environment; report that to Vercel rather than adding warning-suppression scripts. External Vercel settings are not controlled by this repository; correct them for all relevant deployment environments and redeploy. A repository `.npmrc` cannot remove an invalid environment variable supplied by the host.
