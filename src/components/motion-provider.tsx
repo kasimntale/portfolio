@@ -24,14 +24,15 @@ export function MotionProvider() {
         gsap.ticker.add(tick);
       }
       const ctx = gsap.context(() => {
-        gsap.from(".hero-intro > *, .hero-name, .portrait-stage", {
-          opacity: 0,
-          y: 32,
-          duration: 1.15,
-          stagger: 0.1,
-          ease: "power3.out",
-          clearProps: "transform,opacity",
-        });
+        if (document.querySelector(".hero"))
+          gsap.from(".hero-intro > *, .hero-name, .portrait-stage", {
+            opacity: 0,
+            y: 32,
+            duration: 1.15,
+            stagger: 0.1,
+            ease: "power3.out",
+            clearProps: "transform,opacity",
+          });
         gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) =>
           gsap.from(el, {
             y: 42,

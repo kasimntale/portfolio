@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Navigation } from "@/components/navigation";
-import { MotionProvider } from "@/components/motion-provider";
 import { Footer } from "@/components/footer";
 import { profile } from "@/content/portfolio";
 import { siteUrl } from "@/lib/site";
@@ -59,7 +58,6 @@ export default function RootLayout({
           Skip to content
         </a>
         <Navigation />
-        <MotionProvider />
         {children}
         <Footer />
       </body>

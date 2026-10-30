@@ -1,3 +1,4 @@
+import { MotionProvider } from "@/components/motion-provider";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -111,6 +112,7 @@ export default async function ProjectPage({
           <Arrow diagonal />
         </span>
       </Link>
+      <MotionProvider />
     </main>
   );
 }

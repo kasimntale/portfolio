@@ -1,3 +1,4 @@
+import { MotionProvider } from "@/components/motion-provider";
 import Link from "next/link";
 import { WorkAside } from "@/components/work-aside";
 import { Portrait } from "@/components/portrait";
@@ -236,6 +237,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <MotionProvider />
     </main>
   );
 }
