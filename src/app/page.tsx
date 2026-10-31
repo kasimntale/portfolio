@@ -1,16 +1,17 @@
+import { SkillsExplorer } from "@/components/skills-explorer";
 import { MotionProvider } from "@/components/motion-provider";
 import Link from "next/link";
 import { WorkAside } from "@/components/work-aside";
-import { Portrait } from "@/components/portrait";
+import { CodeRevealPortrait } from "@/components/portrait/code-reveal-portrait";
 import { Arrow } from "@/components/icons";
 import { ProjectArt } from "@/components/project-art";
-import { profile, projects, skills, journey } from "@/content/portfolio";
+import { profile, projects, journey } from "@/content/portfolio";
 export default function Home() {
   return (
     <main id="main">
       <section className="hero" aria-labelledby="hero-heading">
         <div className="hero-topline mono">
-          <span>INDEPENDENT MIND. ENGINEERING INSTINCT.</span>
+          <span>BEHIND THE CODE / NTALE KASIM</span>
           <span>PORTFOLIO / VOL. 01</span>
         </div>
         <div className="hero-intro">
@@ -18,16 +19,28 @@ export default function Home() {
             <span className="signal-dot" /> SOFTWARE ENGINEER & OPEN-SOURCE
             BUILDER
           </p>
-          <p>
-            I turn complex problems
-            <br />
-            into things people can <em>use.</em>
-          </p>
-          <a className="text-link" href="#work">
-            Explore selected work <Arrow diagonal />
-          </a>
+          <p>{profile.headline}</p>
+          <div className="hero-actions">
+            <a className="text-link" href="#work">
+              Explore selected work <Arrow diagonal />
+            </a>
+            <a
+              className="text-link"
+              href={profile.github}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub <Arrow diagonal />
+            </a>
+          </div>
         </div>
-        <Portrait />
+        <CodeRevealPortrait
+          src={profile.portrait}
+          isPlaceholder={profile.portraitIsPlaceholder}
+          alt="Portrait of Ntale Kasim"
+          position={profile.portraitPosition}
+          zoom={profile.portraitZoom}
+        />
         <div className="hero-coordinate mono" aria-hidden="true">
           HUMAN THINKING.
           <br />
@@ -44,7 +57,7 @@ export default function Home() {
             <span>↓</span> SCROLL TO DISCOVER
           </a>
           <span className="mono hero-hint">
-            MOVE ACROSS THE PORTRAIT TO LOOK CLOSER
+            MOVE ACROSS THE PORTRAIT. REVEAL THE CODE.
           </span>
           <span className="mono">DESIGNED TO BUILD.</span>
         </div>
@@ -61,7 +74,7 @@ export default function Home() {
         <div className="about-layout">
           <div className="about-kicker" data-reveal>
             <span className="asterisk" aria-hidden="true">
-              ✳
+              *
             </span>
             <p>
               Good software begins
@@ -158,19 +171,7 @@ export default function Home() {
             useful. Areas of practice and ongoing exploration.
           </p>
         </div>
-        <div className="skills-grid">
-          {skills.map((skill, i) => (
-            <div className="skill" key={skill.title} data-reveal>
-              <span className="mono">0{i + 1} /</span>
-              <h3>{skill.title}</h3>
-              <ul>
-                {skill.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+        <SkillsExplorer />
       </section>
       <section
         className="journey section-shell"
