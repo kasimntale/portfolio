@@ -5,3 +5,5 @@ playwright-report
 test-results
 next-env.d.ts
 AGENTS.md
+.agents/
+skills-lock.json

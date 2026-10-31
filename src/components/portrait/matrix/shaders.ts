@@ -1,0 +1,43 @@
+export const vertexShader = `attribute vec2 aPosition;varying vec2 vUv;void main(){vUv=(aPosition+1.)*.5;gl_Position=vec4(aPosition,0.,1.);}`;
+export const fragmentShader = `
+precision highp float;
+uniform sampler2D uPortrait;
+uniform sampler2D uGlyphs;
+uniform vec2 uGrid;
+uniform vec2 uOffset;
+uniform vec2 uScale;
+uniform float uTime;
+uniform float uBlend;
+varying vec2 vUv;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+void main(){
+ vec2 point=vec2(vUv.x,1.-vUv.y);
+ vec2 uv=(point-uOffset)/uScale;
+ vec3 photo=texture2D(uPortrait,uv).rgb;
+ float field=clamp((1.-uv.y)*.74+hash(floor(uv*vec2(19.,25.)))*.14+sin(uv.x*17.+uv.y*12.)*.04,0.,1.);
+ float dissolve=smoothstep(field-.13,field+.13,uBlend*1.4-.2);
+ float distortion=sin(uBlend*3.14159265)*.0018;
+ vec2 photoUv=uv+vec2(sin(uv.y*90.+uTime*1.7)*distortion,0.);
+ photo=texture2D(uPortrait,photoUv).rgb;
+ vec2 cell=floor(point*uGrid);
+ vec2 samplePoint=(cell+.5)/uGrid;
+ vec2 sampleUv=(samplePoint-uOffset)/uScale;
+ vec3 source=texture2D(uPortrait,sampleUv).rgb;
+ float luminance=dot(source,vec3(.2126,.7152,.0722));
+ vec2 head=(uv-vec2(.5,.43))/vec2(.31,.37);
+ float headMask=1.-smoothstep(.88,1.08,length(head));
+ vec2 shoulders=(uv-vec2(.5,1.07))/vec2(.65,.39);
+ float mask=max(headMask,(1.-smoothstep(.88,1.08,length(shoulders)))*smoothstep(.66,.78,uv.y));
+ float speed=1.4+hash(vec2(cell.x,3.))*2.5;
+ vec2 rain=vec2(point.x*uGrid.x,point.y*uGrid.y-uTime*speed);
+ vec2 glyphUv=fract(rain);
+ float digit=step(.5,hash(vec2(cell.x,floor(rain.y))));
+ float glyph=texture2D(uGlyphs,vec2((glyphUv.x+digit)*.5,glyphUv.y)).r;
+ float trail=.45+.55*pow(.5+.5*sin(cell.y*.29-uTime*speed*.34+cell.x),3.);
+ float leftLum=dot(texture2D(uPortrait,sampleUv-vec2(1./uGrid.x,0.)).rgb,vec3(.2126,.7152,.0722));
+ float upperLum=dot(texture2D(uPortrait,sampleUv-vec2(0.,1./uGrid.y)).rgb,vec3(.2126,.7152,.0722));
+ float edge=abs(luminance-leftLum)+abs(luminance-upperLum);
+ float brightness=clamp(pow(luminance,.6)*1.4+edge*.9,0.,1.)*(.7+.3*trail);
+ vec3 digital=vec3(.002,.008,.004)+mask*brightness*vec3(.065,.16,.09)+glyph*mask*brightness*vec3(.37,.95,.57);
+ gl_FragColor=vec4(mix(photo,digital,dissolve),1.);
+}`;

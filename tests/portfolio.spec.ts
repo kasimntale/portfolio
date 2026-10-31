@@ -102,32 +102,17 @@ test("keyboard navigation and mobile menu close, trap, and restore focus", async
     ).toHaveAttribute("aria-current", "location");
   }
 });
-test("reduced motion uses a lightweight portrait with an accessible digital toggle", async ({
-  page,
-}) => {
+test("reduced motion keeps the real portrait still", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator(".portrait-stage")).toHaveAttribute(
+  await expect(page.locator(".matrix-portrait")).toHaveAttribute(
     "data-renderer",
-    "css",
+    "still",
   );
   await expect(page.locator("canvas")).toHaveCount(0);
-  const button = page.getByRole("button", { name: "Reveal the code" });
-  await button.click();
-  await expect(
-    page.getByRole("button", { name: "Hide the code" }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".portrait-stage")).toHaveAttribute(
-    "data-full",
-    "true",
-  );
-  await page.getByRole("button", { name: "Hide the code" }).click();
-  await expect(button).toHaveAttribute("aria-pressed", "false");
-  expect(
-    await page
-      .locator(".route-entry")
-      .evaluate((el) => getComputedStyle(el).animationName),
-  ).toBe("none");
+  await expect(page.getByText("Reduced motion · still portrait")).toBeVisible();
+  await expect(page.getByLabel("Portrait rendering quality")).toBeDisabled();
+  await expect(page.locator(".portrait-image")).toBeVisible();
 });
 test("portrait adapts to device and cleans up across route transitions", async ({
   page,
@@ -138,14 +123,13 @@ test("portrait adapts to device and cleans up across route transitions", async (
     if (m.type() === "error") errors.push(m.text());
   });
   await page.goto("/");
-  await expect(page.locator(".portrait-stage")).toHaveAttribute(
-    "data-renderer",
-    "css",
+  await expect(page.locator(".matrix-portrait")).toHaveAttribute(
+    "data-ready",
+    "true",
   );
-  await expect(page.locator("canvas")).toHaveCount(0);
-  await page.getByRole("button", { name: "Reveal the code" }).click();
+  await page.getByRole("button", { name: "Pause animation" }).click();
   await expect(
-    page.getByRole("button", { name: "Hide the code" }),
+    page.getByRole("button", { name: "Resume animation" }),
   ).toHaveAttribute("aria-pressed", "true");
   await page
     .getByRole("link", { name: "Explore MirrorLoad", exact: true })
@@ -213,9 +197,9 @@ test("tablet layout and data-saver mode remain usable without WebGL", async ({
   await page.goto("/");
   await expect(page.locator(".portrait-stage")).toHaveAttribute(
     "data-renderer",
-    "css",
+    "canvas",
   );
-  await expect(page.locator("canvas")).toHaveCount(0);
+  await expect(page.locator("canvas")).toHaveCount(1);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

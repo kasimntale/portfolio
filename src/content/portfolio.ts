@@ -2,13 +2,13 @@ export const profile = {
   name: "Ntale Kasim",
   email: "kasimntale2@gmail.com",
   github: "https://github.com/kasimntale",
-  linkedin: "",
+  linkedin: "https://www.linkedin.com/in/kasim-ntale-43aa91382/",
   resume: "",
   headline: "Building software. Solving real problems.",
-  portrait: "/images/portrait-placeholder.svg",
+  portrait: "/images/portrait.webp",
   portraitPosition: "50% 50%",
   portraitZoom: 1,
-  portraitIsPlaceholder: true,
+  portraitIsPlaceholder: false,
   description:
     "Software engineer building practical products at the intersection of full-stack development, data, and open source.",
 };
