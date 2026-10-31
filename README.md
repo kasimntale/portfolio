@@ -1,117 +1,153 @@
-# Ntale Kasim — Developer Portfolio
+# Behind the Code — Ntale Kasim
 
-An original editorial portfolio built with Next.js App Router, TypeScript, Tailwind CSS, GSAP, Lenis, and React Three Fiber. Charcoal, warm ivory, and vermilion frame a portrait-led introduction, four project explorations, technical interests, an engineering journey, and direct contact links.
+An original software-engineering portfolio built around the human behind the technology. The signature `CodeRevealPortrait` reveals a curated computational layer through a soft, pointer-following mask. The website includes an editorial introduction, four project case-study routes, filterable engineering disciplines, an experience section, and direct contact links.
 
-## Run locally
+## Local development
 
-Use Node.js 22.x (22.12.0 or later; see `.nvmrc`) and npm. No API keys, database, paid services, or external font requests are required.
+Use **Node.js 22.x**, at least 22.12.0, and npm. `.nvmrc`, `package.json`, and CI agree on Node 22. No API keys, database, paid services, or external font calls are required.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open the development server on port 3000. For production:
+The development server uses port 3000. Windows 10 users can run the same commands in PowerShell. This project needs neither Docker nor a GPU-specific development environment. On an 8 GB laptop, keep build/test workers modest; browser tests use two workers.
 
 ```sh
+npm run lint
 npm run typecheck
+npm run test:unit
 npm run build
 npm start
 ```
 
-The default development command uses Turbopack. Close other heavy applications on an 8 GB laptop; the application does not need Docker or background services. Development on Windows 10 uses the same npm commands in PowerShell.
+TypeScript 6.0.2 is intentional: the current Next.js ESLint toolchain does not support TypeScript 7. Dependency versions are locked. `npm run format:check` checks formatting; `npm run format` applies it.
 
 ## Architecture
 
 ```text
-src/app/                       App Router routes, metadata, sitemap, error/loading/404 views
-src/app/projects/[slug]/        Statically generated project detail routes
-src/components/                Navigation, sections, portrait, original concept illustrations
-src/components/webgl/           Lazy-loaded demand-rendered portrait shader
-src/content/portfolio.ts        Typed identity, projects, skills, journey content
-src/lib/site.ts                Canonical origin configuration
-public/images/                 Optimized local portrait
-tests/                        Playwright browser acceptance tests
+src/app/                              App Router pages, metadata, loading/error/404 states
+src/app/projects/[slug]/               Four statically generated project case studies
+src/components/portrait/               CodeRevealPortrait and inline image fallback
+src/components/motion-provider.tsx     GSAP / @gsap/react page and scroll choreography
+src/components/skills-explorer.tsx     Accessible discipline filters
+src/hooks/use-code-reveal.ts           Demand-driven pointer/touch interpolation and cleanup
+src/lib/reveal.ts                      Pure interpolation, bounds, and quality functions
+src/content/portfolio.ts               Identity, headline, crop, projects, skills, experience
+src/content/code-snippets.ts           Local pre-tokenized decorative programming examples
+public/images/portrait-placeholder.svg Neutral local asset; no invented identity
+tests/unit/                          Node tests for reveal behavior and quality selection
+tests/*.spec.ts                      Playwright component-interaction and whole-site checks
 ```
 
-## Customize content
+The content, rendering, event lifecycle, animation, and routes are separate. Next.js server-renders the content; client islands handle the portrait, navigation, filters, and animation. No editor runtime, Three.js, React Three Fiber, or smooth-scroll library is shipped. Native browser scrolling is preserved.
 
-Edit `src/content/portfolio.ts` to change identity, email, GitHub, skills, experience, and projects. Optional LinkedIn, résumé, repository, and live-demo links render only when a nonempty URL is supplied. Do not use `#` links for missing destinations.
+## Design system
 
-Project descriptions are based on the supplied briefs. Implementation details, proposed stacks, release status, and outcomes are **not independently verified**. Original procedural illustrations are labeled **concept visuals / media placeholders**, not screenshots. Replace these with verified product media and update the status and narrative before presenting them as shipped work. Experience entries intentionally omit unspecified employers and dates. No usage, financial, or performance claims are invented.
+The identity uses deep charcoal (`#171918`, hero `#171b18`), warm off-white (`#eeeae1`), and muted terminal green (`#91b79c`). Barlow Condensed supplies the oversized display type; Manrope supplies body copy; the system monospace stack supplies technical annotations. Fonts are bundled locally through `next/font/local`.
 
-### Portrait replacement
+Design tokens and responsive layouts are in `src/app/globals.css`. Generous editorial spacing, fine borders, restrained concept illustrations, and typographic hierarchy connect sections. The desktop hero uses an overlapping name and portrait; mobile uses stacked name typography with visible reveal controls. No real-world performance scores, project achievements, or proficiency percentages are invented.
 
-The bundled `public/images/portrait.webp` is an AI-assisted dark-background treatment of the photograph supplied by the owner in chat. It is not an independently sourced face or a reconstructed 3D head. Review this treatment before publication; replace it with the original photo if exact photographic fidelity is required.
+## Signature portrait
 
-1. Put your replacement JPG, PNG, or WebP in `public/images/` (portrait ratio near 3:4, preferably 1080 px wide; keep the face centered).
-2. Set `profile.portrait` to its root-relative path in `src/content/portfolio.ts` and keep `portraitIsPlaceholder: false`.
-3. `next/image` generates responsive image variants. The WebGL lens loads the same local source; keep it reasonably compressed, preferably under 250 KB.
-4. If needed, adjust `.portrait-image` and `.portrait-digital-fallback img` object positioning in `globals.css`; the shader uses a centered cover crop. Keep those crops aligned.
-5. Delete the old asset once it is no longer referenced. No animation code needs rewriting.
+`CodeRevealPortrait` is reusable and accepts:
 
-The digital interpretation is a luminance-warped image grid and contour shader. It is an original computational treatment, **not facial mesh reconstruction**.
+| Prop             | Purpose                                                             |
+| ---------------- | ------------------------------------------------------------------- |
+| `src`            | Local photograph URL; defaults to the neutral placeholder           |
+| `alt`            | Accurate description of the supplied photograph                     |
+| `isPlaceholder`  | Show the explicit placeholder label                                 |
+| `position`       | CSS object-position, e.g. `50% 38%`, applied to both layers         |
+| `zoom`           | Matching scale for both portrait layers; default `1`                |
+| `initialQuality` | Conservative SSR quality; device settings refine it after hydration |
 
-## Motion, accessibility, and performance
+The base image stays recognizable. A second aligned image carries a subdued grid and authentic TypeScript/React, Python/ML, HTTP API, data-structure, SQL, and test examples. These snippets are decorative and hidden from assistive technology. They are local typed data, not an editor or randomized text.
 
-- Server-rendered semantic content and all project routes remain usable without WebGL.
-- GSAP owns scroll timelines, reveal effects, and a bounded desktop work-index pin. Lenis updates ScrollTrigger through the same ticker; resources are disposed on route changes and preference changes.
-- The portrait shader uses a single plane, capped DPR of 1.25, low-power graphics preference, and demand rendering. Pointer interpolation stops when settled. It unmounts outside the viewport and while the document is hidden.
-- Touch devices, reduced-motion users, data-saving connections, and reported memory below 4 GB receive an image/CSS fallback. An accessible button enables the digital layer on every device. WebGL errors fall back to the image.
-- Reduced-motion mode disables GSAP/Lenis, CSS transitions, and route-entry animation. Focus indicators, skip navigation, mobile focus management, Escape dismissal, active-section indicators, and named links support keyboard use.
-- Fonts are licensed packages bundled locally through `next/font/local`; the portfolio makes no third-party font or analytics calls.
+The mask radius grows on entry, follows interpolated pointer coordinates, and contracts on exit. Touch press/drag also reveals the layer; `touch-action: pan-y` allows normal page scrolling. The visible **Reveal the code** / **Hide the code** button offers a persistent, non-flashing alternative using keyboard, touch, or mouse. Its `aria-pressed` state reflects the user's toggle.
 
-## Browser tests
+The `Detail` control selects three genuine CSS profiles:
+
+- **Low:** smaller lens, static code, no atmospheric movement. Automatically used for reduced motion, touch/coarse pointers, data saving, or reported memory below 4 GB.
+- **Balanced:** default desktop profile, soft lens, restrained depth and slow decorative movement.
+- **High:** wider lens and more visible computational detail with slightly faster movement. It remains a CSS effect, not a shader or a 3D facial reconstruction.
+
+WebGL was deliberately omitted because the baseline meets the brief with lower complexity and no mandatory GPU canvas. Pointer movement never calls a React state setter. A requestAnimationFrame loop runs only while the mask is settling, pauses offscreen/when hidden, and is canceled on cleanup. Code motion pauses outside a visible active reveal. Quality controls and full-layer toggles use ordinary React state.
+
+With reduced motion, the mask responds directly, atmospheric movement and scroll animations stop, and quality is locked to low. If CSS masks are unavailable, the full-layer button still works. If an image fails, a labeled inline SVG replaces it without a second network request.
+
+### Replace the photograph
+
+The new brief defaults to a neutral placeholder until a photograph is supplied. No substitute person is presented as Ntale Kasim. The previous edited photo has been preserved outside the checkout at `/workspace/portfolio-asset-archive/previous-portrait-treatment.webp` in this workspace; it is not an active identity asset or a required deployment file.
+
+1. Add an approved local JPG, PNG, or WebP under `public/images/`. Prefer a centered 3:4 portrait, roughly 1080 pixels wide, compressed to a few hundred KB or less.
+2. In `src/content/portfolio.ts`, set `portrait`, `portraitIsPlaceholder: false`, `portraitPosition`, and `portraitZoom`.
+3. Check desktop/mobile crop alignment. Both image layers share these controls, so no animation code needs to change.
+4. Keep the neutral asset as the intentional default and the inline fallback for failures.
+
+## Motion and accessibility
+
+GSAP, ScrollTrigger, and `@gsap/react` own page-entry, typography, project transitions, subtle hero parallax, and a short desktop work-index pin. Motion initializes inside hydrated page boundaries. Scoped contexts revert on route changes and reduced-motion changes. No second scrolling system competes with the browser.
+
+Intentional desktop scrolling expands the computational layer as the hero moves into the About section. Low quality and reduced motion skip that expansion. The portrait is closed on first render; the visitor controls pointer/touch/toggle reveals. Offscreen and page-visibility observers suspend unnecessary work.
+
+Navigation includes a skip link, active-section indicators, visible focus states, mobile focus containment, Escape dismissal, and restored focus. Project routes have meaningful titles, descriptions, explicit status, and a custom 404. Skills filters are native buttons with pressed states and a polite result count. The page includes SEO metadata, generated Open Graph imagery, robots, and sitemap routes.
+
+## Editable content and credibility
+
+Edit `src/content/portfolio.ts` for the headline (initially “Building software. Solving real problems.”), identity, project descriptions, technology lists, experience, skills, email, and GitHub. Optional LinkedIn, résumé, source-code, and demo URLs are explicitly empty or absent until supplied; missing links are never rendered as dead buttons.
+
+MirrorLoad, Academy OS, and PocketLedger are owner-supplied project directions with unverified implementation details. WetGuard is explicitly a concept. Original illustrations are labeled **concept visuals / media placeholders**, not product screenshots. Project status and proposed technology areas remain editable. Replace these notes with verified details, screenshots, employer names, dates, and outcomes when available.
+
+## Tests
 
 ```sh
 npx playwright install --with-deps chromium
+npm run test:unit
 npm run build
 npm test
 ```
 
-Playwright starts the production server automatically. If using an existing system Chromium:
+Playwright starts a production server automatically; keep port 3000 free when testing. To use system Chromium in this cloud workspace:
 
 ```sh
-# Linux/macOS
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test
-# PowerShell (adjust path)
-$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH = 'C:\path\to\chrome.exe'
-npm test
 ```
 
-Tests cover desktop and mobile layouts, all project routes, anchor navigation, mobile focus containment and dismissal, portrait toggles, reduced-motion and touch fallbacks, WebGL initialization, route cleanup, runtime errors, metadata, sitemap, Open Graph generation, and custom 404 behavior. CI runs TypeScript, production build, and browser tests for pushes and pull requests. No Lighthouse scores are claimed; measure on the actual deployment and representative hardware.
+On Windows, set the same environment variable with PowerShell's `$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` if using an existing Chrome/Chromium installation, or use Playwright's installed browser. Unit tests run the actual interpolation/quality module. Browser tests exercise the rendered component's pointer, touch, keyboard, reduced-motion, and missing-image behavior; they also cover routes, responsive overflow, navigation, project links, metadata, 404 handling, console errors, skills filtering, and automated accessibility scans. CI runs lint, unit tests, type checking, production build, and desktop/mobile browser checks.
 
-## Deploy
+Browser emulation does not establish physical Windows/Intel GPU, Safari, Android, or iOS performance. No Lighthouse score is claimed. Use the deployed app and representative devices for release performance measurements.
 
-1. Set `NEXT_PUBLIC_SITE_URL` to your canonical HTTPS origin (see `.env.example`). This controls metadata, sitemap, and robots URLs. The default is the owner's GitHub Pages origin as an explicit editable fallback; update it before deploying to another host.
-2. Use a Node.js-compatible Next.js host (for example Vercel), or build and run `npm start` behind an HTTPS reverse proxy. The configured application uses Next's image optimization and generated Open Graph images; copying it directly to GitHub Pages as static files is not supported by this configuration.
-3. Configure `npm ci`, `npm run build`, and `npm start`; bind `PORT` if the host requires it. There are no secrets to configure.
-4. Verify canonical URLs, contact destinations, original portrait fidelity, project details, and optional links before launch. Run the browser suite against production before promoting it.
+## Deployment
 
-## Repository replacement
+This is a normal Next.js application rooted at the repository root, not `src` or `src/app`.
 
-The previous HTML, stylesheet, and all five outdated images have been removed. Git history and GitHub integration are preserved. The rebuild is developed on `feat/immersive-portfolio`; the original parent commit remains available in history, and no merge or push to `main` is required to review this replacement.
+| Vercel setting   | Value                                       |
+| ---------------- | ------------------------------------------- |
+| Framework        | Next.js                                     |
+| Root directory   | Repository root (blank/default)             |
+| Node.js          | `22.x`                                      |
+| Install          | `npm ci`                                    |
+| Build            | `npm run build`                             |
+| Output directory | Framework default; disable custom overrides |
 
-## Validation record
+Set `NEXT_PUBLIC_SITE_URL` to the canonical HTTPS origin before building (see `.env.example`). It controls metadata/sitemap URLs and does not rewrite or redirect the homepage. No `vercel.json`, catch-all rewrite, static export, or external infrastructure is needed. The image and Open Graph features require a Next.js-capable host; copying files directly to GitHub Pages is not supported by this configuration.
 
-Validated in the cloud workspace using Node 22, Next.js production mode, and system Chromium:
+For self-hosting, run `npm ci`, `npm run build`, then `npm start` behind an HTTPS reverse proxy.
 
-- `npm run typecheck`: passed.
-- `npm run build`: passed; home, four project pages, 404, robots, sitemap, and Open Graph image generated.
-- `npm test`: **17 passed, 1 intentionally skipped** across desktop and mobile Chromium profiles. The skipped case is the WebGL-specific visual/context-loss test on the touch profile; the mobile fallback is covered separately.
-- WCAG 2 A/AA and WCAG 2.1 AA axe scans: no violations on the home and MirrorLoad detail pages in desktop/mobile reduced-motion mode. Automated scanning does not replace a full manual accessibility audit.
-- `npm audit --omit=dev --audit-level=high`: zero known vulnerabilities at validation time.
-- Desktop and mobile screenshots inspected. No Lighthouse benchmark, physical Intel GPU, Windows, Firefox, or Safari result is claimed; the mobile tests use Chromium device emulation.
+If npm reports `Unknown env config "cache-dir"` in Vercel, replace the externally supplied `NPM_CONFIG_CACHE_DIR` with the supported `NPM_CONFIG_CACHE`, keeping its directory value. For custom commands use `--cache <path>`, and in npmrc use `cache=<path>`. Keep default dependency caching enabled. A repository npmrc cannot remove an invalid host environment variable.
 
-## Vercel runtime and npm cache configuration
+If a Vercel preview returns platform `NOT_FOUND` while the local production homepage works, verify deployment status, correct Git commit, framework/root/output settings, direct deployment URL, branch-alias assignment, permissions, and Deployment Protection in the dashboard. Do not assume an old branch alias follows new `main` deployments. Dashboard configuration and actual remote deployment health require authenticated access; a successful local build alone does not verify them.
 
-`package.json` pins the runtime to `22.x`, `.nvmrc` selects Node 22, and GitHub Actions reads `.nvmrc`. Use the latest Node 22 patch: the locked accessibility testing dependency requires at least 22.12.0; Next.js requires at least 20.9.0. Dependencies have not been upgraded for this runtime change. In Vercel Project Settings, change Node.js Version from `20.x` to `22.x` to match the package engine and remove the settings-override warning. Use the Next.js framework preset, install with `npm ci`, and build with `npm run build`; no `vercel.json` runtime override is needed.
+## Verified implementation results
 
-There is no repository `.npmrc` or `cache-dir` configuration. If Vercel reports `Unknown env config "cache-dir"` or `Unknown user config "cache-dir"`, inspect the project's Vercel environment variables and custom install command:
+Validation completed on Node 22.23.4 in the cloud workspace:
 
-- Rename `NPM_CONFIG_CACHE_DIR` / `npm_config_cache_dir` to the supported `NPM_CONFIG_CACHE` / `npm_config_cache`, preserving the existing cache directory value.
-- Replace a custom `--cache-dir <path>` argument with `--cache <path>`.
-- If a generated or user-level `.npmrc` contains `cache-dir=<path>`, use `cache=<path>` instead.
-- If no custom cache location is needed, remove the invalid override and retain npm's default cache. Keep GitHub Actions `cache: npm` and Vercel's normal dependency/build caching enabled. Do not clear caches to silence a configuration warning.
+- Frozen `npm ci`, ESLint, TypeScript, formatting checks, and the production build passed.
+- Four unit tests passed against the actual reveal math and quality-selection module.
+- Playwright: **29 passed, 3 intentionally skipped** across desktop and mobile Chromium. The skips are mouse-only, touch-only, and desktop-scroll-only checks on the opposite device profile.
+- Automated WCAG A/AA scans passed on the home and MirrorLoad detail pages in both profiles. This is not a substitute for a full assistive-technology audit.
+- Final development-mode home/project transitions reported no browser console or hydration errors in the inspected desktop/mobile sessions.
+- Desktop/mobile layouts and reveal-control placement were visually inspected. No horizontal overflow was observed in those sessions.
+- Production dependency audit reported zero known vulnerabilities at validation time. npm emits a deprecation notice for the ESLint 9 version selected by the Next.js lint toolchain; linting itself passes.
 
-Check `npm config get cache` in the build environment to verify the effective cache path. If the invalid environment variable is absent from project/team settings, it may be injected by the Vercel build environment; report that to Vercel rather than adding warning-suppression scripts. External Vercel settings are not controlled by this repository; correct them for all relevant deployment environments and redeploy. A repository `.npmrc` cannot remove an invalid environment variable supplied by the host.
+These results validate the current workspace, not the health of a remote Vercel deployment or every physical device. No external deployment was performed for this implementation.

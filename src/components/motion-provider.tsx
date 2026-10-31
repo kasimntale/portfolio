@@ -1,85 +1,81 @@
 "use client";
-import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import Lenis from "lenis";
+import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 export function MotionProvider() {
   const pathname = usePathname();
-  useEffect(() => {
-    const media = gsap.matchMedia();
-    let lenis: Lenis | undefined;
-    let tick: ((time: number) => void) | undefined;
-    media.add("(prefers-reduced-motion: no-preference)", () => {
-      const fine = window.matchMedia("(pointer: fine)").matches;
-      if (fine) {
-        lenis = new Lenis({
-          duration: 1.05,
-          smoothWheel: true,
-          anchors: { offset: -100 },
-        });
-        lenis.on("scroll", ScrollTrigger.update);
-        tick = (time) => lenis?.raf(time * 1000);
-        gsap.ticker.add(tick);
-      }
-      const ctx = gsap.context(() => {
+  useGSAP(
+    () => {
+      const media = gsap.matchMedia();
+      media.add("(prefers-reduced-motion: no-preference)", () => {
         if (document.querySelector(".hero"))
           gsap.from(".hero-intro > *, .hero-name, .portrait-stage", {
             opacity: 0,
             y: 32,
-            duration: 1.15,
-            stagger: 0.1,
+            duration: 1.05,
+            stagger: 0.09,
             ease: "power3.out",
             clearProps: "transform,opacity",
           });
         gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) =>
           gsap.from(el, {
-            y: 42,
+            y: 35,
             opacity: 0,
-            duration: 0.85,
+            duration: 0.8,
             ease: "power2.out",
-            scrollTrigger: { trigger: el, start: "top 91%", once: true },
+            scrollTrigger: { trigger: el, start: "top 92%", once: true },
             clearProps: "transform,opacity",
           }),
         );
-        if (fine && window.innerWidth > 900) {
-          if (document.querySelector(".hero"))
-            gsap
-              .timeline({
-                scrollTrigger: {
-                  trigger: ".hero",
-                  start: "top top",
-                  end: "bottom 15%",
-                  scrub: 0.7,
-                },
-              })
-              .to(
-                ".portrait-stage",
-                { yPercent: 9, scale: 0.93, ease: "none" },
-                0,
-              )
-              .to(
-                ".hero-name",
-                { yPercent: -24, opacity: 0.45, ease: "none" },
-                0,
+        const portrait = document.querySelector<HTMLElement>(
+          ".code-reveal-portrait",
+        );
+        if (
+          portrait &&
+          window.matchMedia("(min-width: 901px) and (pointer: fine)").matches
+        ) {
+          ScrollTrigger.create({
+            trigger: ".hero",
+            start: "top top",
+            end: "bottom top",
+            onUpdate: (self) => {
+              const reveal =
+                portrait.dataset.quality === "low"
+                  ? 0
+                  : Math.max(0, Math.min(1, (self.progress - 0.12) / 0.7)) *
+                    0.55;
+              portrait.dispatchEvent(
+                new CustomEvent("code-reveal-scroll", { detail: reveal }),
               );
+            },
+          });
+        }
+        if (
+          window.matchMedia("(min-width: 901px) and (pointer: fine)").matches &&
+          document.querySelector(".hero")
+        ) {
+          gsap
+            .timeline({
+              scrollTrigger: {
+                trigger: ".hero",
+                start: "top top",
+                end: "bottom 15%",
+                scrub: 0.5,
+              },
+            })
+            .to(
+              ".portrait-stage",
+              { yPercent: 7, scale: 0.94, ease: "none" },
+              0,
+            )
+            .to(".hero-name", { yPercent: -18, opacity: 0.5, ease: "none" }, 0);
         }
       });
-      const onVisibility = () => {
-        if (document.hidden) lenis?.stop();
-        else lenis?.start();
-      };
-      document.addEventListener("visibilitychange", onVisibility);
-      return () => {
-        document.removeEventListener("visibilitychange", onVisibility);
-        ctx.revert();
-        if (tick) gsap.ticker.remove(tick);
-        lenis?.destroy();
-        lenis = undefined;
-      };
-    });
-    return () => media.revert();
-  }, [pathname]);
+      return () => media.revert();
+    },
+    { dependencies: [pathname], revertOnUpdate: true },
+  );
   return null;
 }

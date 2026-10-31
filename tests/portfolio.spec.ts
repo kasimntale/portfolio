@@ -109,18 +109,19 @@ test("reduced motion uses a lightweight portrait with an accessible digital togg
   await page.goto("/");
   await expect(page.locator(".portrait-stage")).toHaveAttribute(
     "data-renderer",
-    "lightweight",
+    "css",
   );
   await expect(page.locator("canvas")).toHaveCount(0);
-  const button = page.getByRole("button", { name: "Reveal digital layer" });
+  const button = page.getByRole("button", { name: "Reveal the code" });
   await button.click();
   await expect(
-    page.getByRole("button", { name: "View human" }),
+    page.getByRole("button", { name: "Hide the code" }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".portrait-digital-fallback")).toHaveClass(
-    /is-visible/,
+  await expect(page.locator(".portrait-stage")).toHaveAttribute(
+    "data-full",
+    "true",
   );
-  await page.getByRole("button", { name: "View human" }).click();
+  await page.getByRole("button", { name: "Hide the code" }).click();
   await expect(button).toHaveAttribute("aria-pressed", "false");
   expect(
     await page
@@ -130,33 +131,22 @@ test("reduced motion uses a lightweight portrait with an accessible digital togg
 });
 test("portrait adapts to device and cleans up across route transitions", async ({
   page,
-}, info) => {
+}) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => {
     if (m.type() === "error") errors.push(m.text());
   });
   await page.goto("/");
-  if (info.project.name === "mobile") {
-    await expect(page.locator(".portrait-stage")).toHaveAttribute(
-      "data-renderer",
-      "lightweight",
-    );
-    await expect(page.locator("canvas")).toHaveCount(0);
-  } else {
-    await expect(page.locator(".portrait-stage")).toHaveAttribute(
-      "data-renderer",
-      "webgl",
-    );
-    await expect(page.locator("canvas")).toBeVisible();
-    const box = await page.locator(".portrait-stage").boundingBox();
-    if (box)
-      await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.4);
-    await page.getByRole("button", { name: "Reveal digital layer" }).click();
-    await expect(
-      page.getByRole("button", { name: "View human" }),
-    ).toHaveAttribute("aria-pressed", "true");
-  }
+  await expect(page.locator(".portrait-stage")).toHaveAttribute(
+    "data-renderer",
+    "css",
+  );
+  await expect(page.locator("canvas")).toHaveCount(0);
+  await page.getByRole("button", { name: "Reveal the code" }).click();
+  await expect(
+    page.getByRole("button", { name: "Hide the code" }),
+  ).toHaveAttribute("aria-pressed", "true");
   await page
     .getByRole("link", { name: "Explore MirrorLoad", exact: true })
     .click();
@@ -210,36 +200,6 @@ test("home and project detail have no serious accessibility violations", async (
     ).toEqual([]);
   }
 });
-test("portrait lens changes the rendered image and recovers from context loss", async ({
-  page,
-}, info) => {
-  test.skip(
-    info.project.name !== "desktop",
-    "WebGL is intentionally unavailable on touch devices",
-  );
-  await page.goto("/");
-  const canvas = page.locator("canvas");
-  await expect(canvas).toBeVisible();
-  await page.getByRole("button", { name: "Reveal digital layer" }).click();
-  await expect(
-    page.getByRole("button", { name: "View human" }),
-  ).toHaveAttribute("aria-pressed", "true");
-  // Allow the damped uniforms to settle before comparing the two visual states.
-  await page.waitForTimeout(700);
-  const digital = await canvas.screenshot();
-  await page.getByRole("button", { name: "View human" }).click();
-  await page.mouse.move(0, 0);
-  await page.waitForTimeout(700);
-  const human = await canvas.screenshot();
-  expect(digital.equals(human)).toBe(false);
-  await canvas.dispatchEvent("webglcontextlost");
-  await expect(page.locator(".portrait-stage")).toHaveAttribute(
-    "data-renderer",
-    "lightweight",
-  );
-  await expect(canvas).toHaveCount(0);
-  await expect(page.locator(".portrait-image")).toBeVisible();
-});
 test("tablet layout and data-saver mode remain usable without WebGL", async ({
   page,
 }) => {
@@ -253,7 +213,7 @@ test("tablet layout and data-saver mode remain usable without WebGL", async ({
   await page.goto("/");
   await expect(page.locator(".portrait-stage")).toHaveAttribute(
     "data-renderer",
-    "lightweight",
+    "css",
   );
   await expect(page.locator("canvas")).toHaveCount(0);
   expect(
@@ -267,4 +227,28 @@ test("tablet layout and data-saver mode remain usable without WebGL", async ({
   await expect(
     page.getByRole("heading", { name: "WetGuard", exact: true }),
   ).toBeVisible();
+});
+test("skill filters show the requested disciplines and retain keyboard focus", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.locator(".skills-grid .skill")).toHaveCount(6);
+  const product = page.getByRole("button", {
+    name: "Product engineering",
+    exact: true,
+  });
+  await product.click();
+  await expect(page.locator(".skills-grid .skill")).toHaveCount(3);
+  await expect(product).toHaveAttribute("aria-pressed", "true");
+  await expect(product).toBeFocused();
+  await expect(page.getByRole("status")).toContainText("Product engineering");
+  await page
+    .getByRole("button", { name: "Data & systems", exact: true })
+    .click();
+  await expect(page.locator(".skills-grid .skill")).toHaveCount(3);
+  await expect(page.locator(".skills-grid")).toContainText(
+    "Data & machine learning",
+  );
+  await page.getByRole("button", { name: "All disciplines" }).click();
+  await expect(page.locator(".skills-grid .skill")).toHaveCount(6);
 });

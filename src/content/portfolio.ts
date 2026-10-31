@@ -4,8 +4,11 @@ export const profile = {
   github: "https://github.com/kasimntale",
   linkedin: "",
   resume: "",
-  portrait: "/images/portrait.webp",
-  portraitIsPlaceholder: false,
+  headline: "Building software. Solving real problems.",
+  portrait: "/images/portrait-placeholder.svg",
+  portraitPosition: "50% 50%",
+  portraitZoom: 1,
+  portraitIsPlaceholder: true,
   description:
     "Software engineer building practical products at the intersection of full-stack development, data, and open source.",
 };

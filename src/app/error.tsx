@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 export default function Error({ reset }: { reset: () => void }) {
   return (
     <main id="main" className="not-found section-shell">
@@ -8,9 +9,9 @@ export default function Error({ reset }: { reset: () => void }) {
       <button className="button-link" onClick={reset}>
         Try again
       </button>
-      <a className="text-link" href="/">
+      <Link className="text-link" href="/">
         Return home
-      </a>
+      </Link>
     </main>
   );
 }

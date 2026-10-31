@@ -18,7 +18,7 @@ export default function Image() {
         fontFamily: "sans-serif",
       }}
     >
-      <span style={{ fontSize: 22, letterSpacing: 6, color: "#ed583b" }}>
+      <span style={{ fontSize: 22, letterSpacing: 6, color: "#91b79c" }}>
         SOFTWARE ENGINEER / OPEN-SOURCE BUILDER
       </span>
       <div style={{ display: "flex", flexDirection: "column" }}>
