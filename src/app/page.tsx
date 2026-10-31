@@ -2,7 +2,7 @@ import { SkillsExplorer } from "@/components/skills-explorer";
 import { MotionProvider } from "@/components/motion-provider";
 import Link from "next/link";
 import { WorkAside } from "@/components/work-aside";
-import { CodeRevealPortrait } from "@/components/portrait/code-reveal-portrait";
+import { MatrixPortrait } from "@/components/portrait/matrix-portrait";
 import { Arrow } from "@/components/icons";
 import { ProjectArt } from "@/components/project-art";
 import { profile, projects, journey } from "@/content/portfolio";
@@ -34,7 +34,7 @@ export default function Home() {
             </a>
           </div>
         </div>
-        <CodeRevealPortrait
+        <MatrixPortrait
           src={profile.portrait}
           isPlaceholder={profile.portraitIsPlaceholder}
           alt="Portrait of Ntale Kasim"
@@ -57,7 +57,7 @@ export default function Home() {
             <span>↓</span> SCROLL TO DISCOVER
           </a>
           <span className="mono hero-hint">
-            MOVE ACROSS THE PORTRAIT. REVEAL THE CODE.
+            HUMAN → BINARY → HUMAN. ALWAYS EVOLVING.
           </span>
           <span className="mono">DESIGNED TO BUILD.</span>
         </div>

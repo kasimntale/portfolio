@@ -1,6 +1,6 @@
 # Behind the Code — Ntale Kasim
 
-An original software-engineering portfolio built around the human behind the technology. The signature `CodeRevealPortrait` reveals a curated computational layer through a soft, pointer-following mask. The website includes an editorial introduction, four project case-study routes, filterable engineering disciplines, an experience section, and direct contact links.
+An original software-engineering portfolio built around the human behind the technology. The signature `MatrixPortrait` automatically transforms the photograph into a luminance-shaped binary face and reconstructs it in a repeating 14-second cycle. The website includes an editorial introduction, four project case-study routes, filterable engineering disciplines, an experience section, and direct contact links.
 
 ## Local development
 
@@ -28,19 +28,18 @@ TypeScript 6.0.2 is intentional: the current Next.js ESLint toolchain does not s
 ```text
 src/app/                              App Router pages, metadata, loading/error/404 states
 src/app/projects/[slug]/               Four statically generated project case studies
-src/components/portrait/               CodeRevealPortrait and inline image fallback
+src/components/portrait/               MatrixPortrait and inline image fallback
 src/components/motion-provider.tsx     GSAP / @gsap/react page and scroll choreography
 src/components/skills-explorer.tsx     Accessible discipline filters
-src/hooks/use-code-reveal.ts           Demand-driven pointer/touch interpolation and cleanup
-src/lib/reveal.ts                      Pure interpolation, bounds, and quality functions
+src/components/portrait/matrix/        Native WebGL shaders and Canvas fallback renderer
+src/lib/matrix-timeline.ts             Shared cycle, quality profiles, and cover-crop math
 src/content/portfolio.ts               Identity, headline, crop, projects, skills, experience
-src/content/code-snippets.ts           Local pre-tokenized decorative programming examples
-public/images/portrait-placeholder.svg Neutral local asset; no invented identity
+public/images/portrait.webp            Supplied-photo treatment used as the active identity
 tests/unit/                          Node tests for reveal behavior and quality selection
 tests/*.spec.ts                      Playwright component-interaction and whole-site checks
 ```
 
-The content, rendering, event lifecycle, animation, and routes are separate. Next.js server-renders the content; client islands handle the portrait, navigation, filters, and animation. No editor runtime, Three.js, React Three Fiber, or smooth-scroll library is shipped. Native browser scrolling is preserved.
+The content, rendering, event lifecycle, animation, and routes are separate. Next.js server-renders the content; client islands handle the portrait, navigation, filters, and animation. No editor runtime, Three.js, React Three Fiber, or smooth-scroll library is shipped; the enhanced renderer uses the browser’s native WebGL API. Native browser scrolling is preserved.
 
 ## Design system
 
@@ -48,53 +47,37 @@ The identity uses deep charcoal (`#171918`, hero `#171b18`), warm off-white (`#e
 
 Design tokens and responsive layouts are in `src/app/globals.css`. Generous editorial spacing, fine borders, restrained concept illustrations, and typographic hierarchy connect sections. The desktop hero uses an overlapping name and portrait; mobile uses stacked name typography with visible reveal controls. No real-world performance scores, project achievements, or proficiency percentages are invented.
 
-## Signature portrait
+## Automatic Matrix portrait
 
-`CodeRevealPortrait` is reusable and accepts:
+`MatrixPortrait` takes `src`, `alt`, `isPlaceholder`, `position`, and `zoom`. Its animation starts without mouse movement, hover, clicking, or touching, on both desktop and mobile.
 
-| Prop             | Purpose                                                             |
-| ---------------- | ------------------------------------------------------------------- |
-| `src`            | Local photograph URL; defaults to the neutral placeholder           |
-| `alt`            | Accurate description of the supplied photograph                     |
-| `isPlaceholder`  | Show the explicit placeholder label                                 |
-| `position`       | CSS object-position, e.g. `50% 38%`, applied to both layers         |
-| `zoom`           | Matching scale for both portrait layers; default `1`                |
-| `initialQuality` | Conservative SSR quality; device settings refine it after hydration |
+The 14-second loop holds the photo (0–2.2 s), spatially transforms it (2.2–5.8 s), shows a flowing binary face (5.8–9.4 s), reconstructs the image (9.4–12.8 s), and holds the photo again before the seamless repeat. The GLSL renderer draws real `0` and `1` glyphs from a local generated atlas; source-image luminance and an approximate head/shoulder mask shape the digital face. Transition fields spread through the image instead of applying a uniform opacity fade. No 3D reconstruction or learned face segmentation is claimed.
 
-The base image stays recognizable. A second aligned image carries a subdued grid and authentic TypeScript/React, Python/ML, HTTP API, data-structure, SQL, and test examples. These snippets are decorative and hidden from assistive technology. They are local typed data, not an editor or randomized text.
+A conservative balanced profile starts at capped DPR 1.25 / a 30 FPS render budget, with 76 × 110 potential glyph cells. High allows a 60 FPS budget and a denser grid. Actual performance is device-dependent. Data saving, low reported memory/core counts, unavailable WebGL, or context loss use a smaller Canvas-based automatic cycle. Delivered frame cadence is measured and automatic quality can lower the resolution/rate. Quality can be adjusted manually. No high-end GPU is assumed.
 
-The mask radius grows on entry, follows interpolated pointer coordinates, and contracts on exit. Touch press/drag also reveals the layer; `touch-action: pan-y` allows normal page scrolling. The visible **Reveal the code** / **Hide the code** button offers a persistent, non-flashing alternative using keyboard, touch, or mouse. Its `aria-pressed` state reflects the user's toggle.
+The real photograph is rendered in server HTML while the client-only renderer loads. Resize uses the same cover-crop transform for photograph and luminance sampling. Offscreen/hidden-tab work pauses; returning resumes the stored clock. GPU programs, shaders, buffers, textures, observers, listeners, and animation-frame requests are cleaned up. The visible pause button returns to a still photo; resume continues the animation. Reduced motion selects a still photograph automatically.
 
-The `Detail` control selects three genuine CSS profiles:
+### Portrait identity and replacement
 
-- **Low:** smaller lens, static code, no atmospheric movement. Automatically used for reduced motion, touch/coarse pointers, data saving, or reported memory below 4 GB.
-- **Balanced:** default desktop profile, soft lens, restrained depth and slow decorative movement.
-- **High:** wider lens and more visible computational detail with slightly faster movement. It remains a CSS effect, not a shader or a 3D facial reconstruction.
+`public/images/portrait.webp` is restored from the earlier dark-background treatment made from the photograph Ntale Kasim supplied in chat. It is not a newly invented likeness. The original, unmodified upload was not available as a local file; exact original pixel fidelity is not claimed.
 
-WebGL was deliberately omitted because the baseline meets the brief with lower complexity and no mandatory GPU canvas. Pointer movement never calls a React state setter. A requestAnimationFrame loop runs only while the mask is settling, pauses offscreen/when hidden, and is canceled on cleanup. Code motion pauses outside a visible active reveal. Quality controls and full-layer toggles use ordinary React state.
+To replace it, add an approved local JPG/PNG/WebP, then update `portrait`, `portraitIsPlaceholder: false`, `portraitPosition`, and `portraitZoom` in `src/content/portfolio.ts`. A centered 3:4 portrait with a dark background works best. Adjust the approximate silhouette in the renderers if the new composition differs substantially. Keep the placeholder SVG and inline fallback for loading failures. The animation timeline needs no changes.
 
-With reduced motion, the mask responds directly, atmospheric movement and scroll animations stop, and quality is locked to low. If CSS masks are unavailable, the full-layer button still works. If an image fails, a labeled inline SVG replaces it without a second network request.
+## Reference research and installed skill
 
-### Replace the photograph
-
-The new brief defaults to a neutral placeholder until a photograph is supplied. No substitute person is presented as Ntale Kasim. The previous edited photo has been preserved outside the checkout at `/workspace/portfolio-asset-archive/previous-portrait-treatment.webp` in this workspace; it is not an active identity asset or a required deployment file.
-
-1. Add an approved local JPG, PNG, or WebP under `public/images/`. Prefer a centered 3:4 portrait, roughly 1080 pixels wide, compressed to a few hundred KB or less.
-2. In `src/content/portfolio.ts`, set `portrait`, `portraitIsPlaceholder: false`, `portraitPosition`, and `portraitZoom`.
-3. Check desktop/mobile crop alignment. Both image layers share these controls, so no animation code needs to change.
-4. Keep the neutral asset as the intentional default and the inline fallback for failures.
+The exact requested reverse-engineering skill is retained in `.agents/skills/reverse-engineering`; `skills-lock.json` records its source. See [reference analysis](docs/REFERENCE-ANIMATION-ANALYSIS.md). The reference website was blocked by the environment proxy, so no live reference observations or claims about its shaders are made. The installed binary-analysis workflow was adapted to relevant website observation/reporting tasks; no binary-disassembly or malware-execution steps were applicable.
 
 ## Motion and accessibility
 
 GSAP, ScrollTrigger, and `@gsap/react` own page-entry, typography, project transitions, subtle hero parallax, and a short desktop work-index pin. Motion initializes inside hydrated page boundaries. Scoped contexts revert on route changes and reduced-motion changes. No second scrolling system competes with the browser.
 
-Intentional desktop scrolling expands the computational layer as the hero moves into the About section. Low quality and reduced motion skip that expansion. The portrait is closed on first render; the visitor controls pointer/touch/toggle reveals. Offscreen and page-visibility observers suspend unnecessary work.
+Hero parallax remains controlled by GSAP; it no longer controls the portrait transformation. The renderer owns its independent visible-time clock, so scrolling does not hijack or restart the automatic cycle. Offscreen and page-visibility observers suspend unnecessary work.
 
 Navigation includes a skip link, active-section indicators, visible focus states, mobile focus containment, Escape dismissal, and restored focus. Project routes have meaningful titles, descriptions, explicit status, and a custom 404. Skills filters are native buttons with pressed states and a polite result count. The page includes SEO metadata, generated Open Graph imagery, robots, and sitemap routes.
 
 ## Editable content and credibility
 
-Edit `src/content/portfolio.ts` for the headline (initially “Building software. Solving real problems.”), identity, project descriptions, technology lists, experience, skills, email, and GitHub. Optional LinkedIn, résumé, source-code, and demo URLs are explicitly empty or absent until supplied; missing links are never rendered as dead buttons.
+Edit `src/content/portfolio.ts` for the headline (initially “Building software. Solving real problems.”), identity, project descriptions, technology lists, experience, skills, email, and GitHub. The supplied LinkedIn profile is linked in Contact. Optional résumé, source-code, and demo URLs are explicitly empty or absent until supplied; missing links are never rendered as dead buttons.
 
 MirrorLoad, Academy OS, and PocketLedger are owner-supplied project directions with unverified implementation details. WetGuard is explicitly a concept. Original illustrations are labeled **concept visuals / media placeholders**, not product screenshots. Project status and proposed technology areas remain editable. Replace these notes with verified details, screenshots, employer names, dates, and outcomes when available.
 
@@ -113,7 +96,7 @@ Playwright starts a production server automatically; keep port 3000 free when te
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test
 ```
 
-On Windows, set the same environment variable with PowerShell's `$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` if using an existing Chrome/Chromium installation, or use Playwright's installed browser. Unit tests run the actual interpolation/quality module. Browser tests exercise the rendered component's pointer, touch, keyboard, reduced-motion, and missing-image behavior; they also cover routes, responsive overflow, navigation, project links, metadata, 404 handling, console errors, skills filtering, and automated accessibility scans. CI runs lint, unit tests, type checking, production build, and desktop/mobile browser checks.
+On Windows, set the same environment variable with PowerShell's `$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` if using an existing Chrome/Chromium installation, or use Playwright's installed browser. Unit tests run the actual timeline/cover/quality module. Browser tests observe two full cycles without pointer input on desktop and mobile, capture six animation stages, and exercise pause/resume, hidden/offscreen handling, context-loss fallback, reduced-motion, and missing-image behavior; they also cover routes, responsive overflow, navigation, project links, metadata, 404 handling, console errors, skills filtering, and automated accessibility scans. CI runs lint, unit tests, type checking, production build, and desktop/mobile browser checks.
 
 Browser emulation does not establish physical Windows/Intel GPU, Safari, Android, or iOS performance. No Lighthouse score is claimed. Use the deployed app and representative devices for release performance measurements.
 
@@ -138,16 +121,6 @@ If npm reports `Unknown env config "cache-dir"` in Vercel, replace the externall
 
 If a Vercel preview returns platform `NOT_FOUND` while the local production homepage works, verify deployment status, correct Git commit, framework/root/output settings, direct deployment URL, branch-alias assignment, permissions, and Deployment Protection in the dashboard. Do not assume an old branch alias follows new `main` deployments. Dashboard configuration and actual remote deployment health require authenticated access; a successful local build alone does not verify them.
 
-## Verified implementation results
+## Validation and visual evidence
 
-Validation completed on Node 22.23.4 in the cloud workspace:
-
-- Frozen `npm ci`, ESLint, TypeScript, formatting checks, and the production build passed.
-- Four unit tests passed against the actual reveal math and quality-selection module.
-- Playwright: **29 passed, 3 intentionally skipped** across desktop and mobile Chromium. The skips are mouse-only, touch-only, and desktop-scroll-only checks on the opposite device profile.
-- Automated WCAG A/AA scans passed on the home and MirrorLoad detail pages in both profiles. This is not a substitute for a full assistive-technology audit.
-- Final development-mode home/project transitions reported no browser console or hydration errors in the inspected desktop/mobile sessions.
-- Desktop/mobile layouts and reveal-control placement were visually inspected. No horizontal overflow was observed in those sessions.
-- Production dependency audit reported zero known vulnerabilities at validation time. npm emits a deprecation notice for the ESLint 9 version selected by the Next.js lint toolchain; linting itself passes.
-
-These results validate the current workspace, not the health of a remote Vercel deployment or every physical device. No external deployment was performed for this implementation.
+See [Matrix validation](docs/MATRIX-VALIDATION.md) for the actual results of this revision. Stage screenshots and test diagnostics are written to `test-results/`; those generated artifacts are intentionally ignored by Git. A successful local build does not verify the accessibility of a remote Vercel deployment. No external deployment is implied by this implementation.

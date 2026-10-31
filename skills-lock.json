@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "reverse-engineering": {
+      "source": "juank115/reverse-engineerskill",
+      "sourceType": "github",
+      "skillPath": "skills/reverse-engineering/SKILL.md",
+      "computedHash": "1610136a70b40fed8febd26f29dcc8ad4e555ef74339e7033432c3c8b7912c3a"
+    }
+  }
+}

@@ -29,29 +29,6 @@ export function MotionProvider() {
             clearProps: "transform,opacity",
           }),
         );
-        const portrait = document.querySelector<HTMLElement>(
-          ".code-reveal-portrait",
-        );
-        if (
-          portrait &&
-          window.matchMedia("(min-width: 901px) and (pointer: fine)").matches
-        ) {
-          ScrollTrigger.create({
-            trigger: ".hero",
-            start: "top top",
-            end: "bottom top",
-            onUpdate: (self) => {
-              const reveal =
-                portrait.dataset.quality === "low"
-                  ? 0
-                  : Math.max(0, Math.min(1, (self.progress - 0.12) / 0.7)) *
-                    0.55;
-              portrait.dispatchEvent(
-                new CustomEvent("code-reveal-scroll", { detail: reveal }),
-              );
-            },
-          });
-        }
         if (
           window.matchMedia("(min-width: 901px) and (pointer: fine)").matches &&
           document.querySelector(".hero")
